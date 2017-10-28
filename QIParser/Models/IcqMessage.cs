@@ -1,21 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QIParser.Models
 {
     public class IcqMessage
     {
-		public int From { get; set; }
-		public int To { get; set; }
-		public string MessageText { get; set; }
-		public DateTime Sent { get; set; }
+		public int Id { get; set; }
+		public int ContactUin { get; set; }
+		public bool IsMy { get; set; }
+		public string Text { get; set; }
+		public DateTime DateTime { get; set; }
+
+		public IcqMessage()
+		{
+
+		}
+
+		public IcqMessage(int uin, bool isMy, DateTime dateTime, string text)
+		{
+			ContactUin = uin;
+			IsMy = isMy;
+			DateTime = dateTime;
+			Text = text;
+		}
 
 		public override string ToString()
 		{
-			return $"{From} ({Sent.ToString("dd.MM.yy hh:mm:ss")}";
+			return (IsMy ? "To: " : "From: ") +  $"{ContactUin} ({DateTime:dd.MM.yyhh:mm:ss}";
 		}
 	}
 }

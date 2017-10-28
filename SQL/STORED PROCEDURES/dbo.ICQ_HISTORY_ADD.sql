@@ -7,17 +7,25 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
+-- =============================================
+-- Author:		Комаров К.
+-- Create date: 2017-10-28
+-- Description:	Добавить сообщение в переписку.
+-- =============================================
 CREATE PROCEDURE [dbo].[ICQ_HISTORY_ADD]
-	@from int,
-	@to int,
-	@date DATETIME,
-	@text NVARCHAR(MAX)
+	@uin int,
+	@is_my bit,
+	@date datetime,
+	@text nvarchar(MAX)
 AS
-	DECLARE @result TABLE([ID] INT);
-	INSERT INTO [dbo].[ICQ_HISTORY] ([FROM], [TO], [DATE], [MESSAGE])
-	OUTPUT INSERTED.ID INTO @result
-	VALUES (@from, @to, @date, @text)
+	BEGIN
+		DECLARE @result TABLE([MESSAGE_ID] INT);
+		INSERT INTO [dbo].[ICQ_HISTORY] ([IS_MY], [CONTACT_UIN], [DATE], [TEXT])
+		OUTPUT INSERTED.MESSAGE_ID INTO @result
+		VALUES (@is_my, @uin, @date, @text)
 
-	SELECT [ID]
-	FROM @result
+		SELECT [MESSAGE_ID]
+		FROM @result
+	END;
+GO
+

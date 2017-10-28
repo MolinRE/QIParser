@@ -13,7 +13,7 @@ namespace QIParser
 	public class QHFReader : IDisposable
 	{
 		public string Nick { get; set; }
-		public string UIN { get; set; }
+		public string Uin { get; set; }
 		public Int32 MsgCount { get; set; }
 		public Int32 Size { get; set; }
 
@@ -32,7 +32,7 @@ namespace QIParser
 			MsgCount = br.ReadInt32();
 			fs.Position = 44;
 			Int16 uinLength = br.ReadInt16();
-			UIN = encoding.GetString(br.ReadBytes(uinLength));
+			Uin = encoding.GetString(br.ReadBytes(uinLength));
 			Int16 nickLength = br.ReadInt16();
 			Nick = encoding.GetString(br.ReadBytes(nickLength));
 				
@@ -44,11 +44,12 @@ namespace QIParser
 				return false;
 
 			byte[] msgBytes = null;
-			Trace.WriteLine("Block start: " + fs.Position);
-			var sign = br.ReadInt16();
-			if (sign != 1)
+			//Trace.WriteLine("Block start: " + fs.Position);
+			msg.Signature = br.ReadInt16();
+			if (msg.SignatureMismatch)
 			{
-				throw new Exception($"Signature mismatch. (sign={sign})");
+				Trace.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
+				return true;
 			}
 			var size = br.ReadInt32();
 			var endOfBlock = size + fs.Position;
@@ -103,7 +104,7 @@ namespace QIParser
 		{
 			Int32 result = 0;
 			var blockType = (QHFMessageType)br.ReadInt16();
-			Trace.WriteLine(blockType);
+			//Trace.WriteLine(blockType);
 			switch (blockType)
 			{
 				case QHFMessageType.MessageOnline:

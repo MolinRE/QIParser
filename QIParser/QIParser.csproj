@@ -40,9 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DAL\IMessageLoader.cs" />
     <Compile Include="Models\QHFMessageType.cs" />
     <Compile Include="Models\ShortMessage.cs" />
     <Compile Include="Models\SmsBackup.cs" />
+    <Compile Include="QHFController.cs" />
     <Compile Include="Utils\BinaryReaderBE.cs" />
     <Compile Include="DAL\IcqAccountLoader.cs" />
     <Compile Include="DAL\IcqMessageLoader.cs" />

@@ -35,9 +35,9 @@ namespace QIParser.DAL
 			return instance;
 		}
 
-		public long Add(IcqMessage value)
+		public int AddRange(IEnumerable<IcqMessage> range)
 		{
-			long id = 0;
+			int rowCount = 0;
 
 			try
 			{
@@ -46,11 +46,85 @@ namespace QIParser.DAL
 					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_ADD]", conn))
 					{
 						cmd.CommandType = CommandType.StoredProcedure;
+						conn.Open();
 
-						cmd.Parameters.AddWithValue("@from", value.From);
-						cmd.Parameters.AddWithValue("@to", value.To);
-						cmd.Parameters.AddWithValue("@date", value.Sent);
-						cmd.Parameters.AddWithValue("@text", value.MessageText);
+						foreach (var item in range)
+						{
+							cmd.Parameters.AddWithValue("@uin", item.ContactUin);
+							cmd.Parameters.AddWithValue("@is_my", item.IsMy);
+							cmd.Parameters.AddWithValue("@date", item.DateTime);
+							cmd.Parameters.AddWithValue("@text", item.Text);
+
+							using (var dr = cmd.ExecuteReader())
+							{
+								if (dr.Read())
+								{
+									item.Id = dr.GetInt32(0);
+									rowCount++;
+								}
+							}
+							cmd.Parameters.Clear();
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+
+			return rowCount;
+		}
+
+		//public int Add(IcqMessage item)
+		//{
+		//	int id = 0;
+
+		//	try
+		//	{
+		//		using (var conn = new SqlConnection(_cnString))
+		//		{
+		//			using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_ADD]", conn))
+		//			{
+		//				cmd.CommandType = CommandType.StoredProcedure;
+
+		//				cmd.Parameters.AddWithValue("@uin", item.ContactUin);
+		//				cmd.Parameters.AddWithValue("@is_my", item.IsMy);
+		//				cmd.Parameters.AddWithValue("@date", item.DateTime);
+		//				cmd.Parameters.AddWithValue("@text", item.Text);
+
+		//				conn.Open();
+
+		//				using (var dr = cmd.ExecuteReader())
+		//				{
+		//					if (dr.Read())
+		//					{
+		//						id = dr.GetInt32(0);
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Console.WriteLine(ex);
+		//	}
+
+		//	return id;
+		//}
+
+		public IcqMessage GetEarliest(IcqAccount account)
+		{
+			IcqMessage result = null;
+
+			try
+			{
+				using (var conn = new SqlConnection(_cnString))
+				{
+					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_GET_EARLIEST]", conn))
+					{
+						cmd.CommandType = CommandType.StoredProcedure;
+						cmd.Parameters.AddWithValue("@uin", account.Uin);
 
 						conn.Open();
 
@@ -58,46 +132,12 @@ namespace QIParser.DAL
 						{
 							if (dr.Read())
 							{
-								id = dr.GetInt32(0);
-							}
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-			}
-
-			return id;
-		}
-
-		public List<IcqMessage> GetAll(int uin)
-		{
-			var result = new List<IcqMessage>();
-
-			try
-			{
-				using (var conn = new SqlConnection(_cnString))
-				{
-					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_GET_ALL]", conn))
-					{
-						cmd.CommandType = CommandType.StoredProcedure;
-						cmd.Parameters.AddWithValue("@uin", uin);
-
-						conn.Open();
-
-						using (var dr = cmd.ExecuteReader())
-						{
-							while (dr.Read())
-							{
-								var msg = new IcqMessage();
-								msg.From = dr.GetInt32(dr.GetOrdinal("FROM"));
-								msg.To = dr.GetInt32(dr.GetOrdinal("TO"));
-								msg.Sent = dr.GetDateTime(dr.GetOrdinal("DATE"));
-								msg.MessageText = dr.GetString(dr.GetOrdinal("MESSAGE"));
-
-								result.Add(msg);
+								result = new IcqMessage();
+								result.Id = dr.GetInt32(dr.GetOrdinal("MESSAGE_ID"));
+								result.ContactUin = dr.GetInt32(dr.GetOrdinal("CONTACT_UIN"));
+								result.IsMy = dr.GetBoolean(dr.GetOrdinal("IS_MY"));
+								result.DateTime = dr.GetDateTime(dr.GetOrdinal("DATE"));
+								result.Text = dr.GetString(dr.GetOrdinal("TEXT"));
 							}
 						}
 					}
@@ -111,35 +151,31 @@ namespace QIParser.DAL
 			return result;
 		}
 
-		public List<IcqMessage> GetRange(int uin, DateTime from, DateTime to)
+		public IcqMessage GetLatest(IcqAccount account)
 		{
-			var result = new List<IcqMessage>();
+			IcqMessage result = null;
 
 			try
 			{
 				using (var conn = new SqlConnection(_cnString))
 				{
-					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_GET_RANGE]", conn))
+					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_GET_LATEST]", conn))
 					{
 						cmd.CommandType = CommandType.StoredProcedure;
-
-						cmd.Parameters.AddWithValue("@date_from", from);
-						cmd.Parameters.AddWithValue("@date_to", to);
-						cmd.Parameters.AddWithValue("@uin", uin);
+						cmd.Parameters.AddWithValue("@uin", account.Uin);
 
 						conn.Open();
 
 						using (var dr = cmd.ExecuteReader())
 						{
-							while (dr.Read())
+							if (dr.Read())
 							{
-								var msg = new IcqMessage();
-								msg.From = dr.GetInt32(dr.GetOrdinal("FROM"));
-								msg.To = dr.GetInt32(dr.GetOrdinal("TO"));
-								msg.Sent = dr.GetDateTime(dr.GetOrdinal("DATE"));
-								msg.MessageText = dr.GetString(dr.GetOrdinal("MESSAGE"));
-
-								result.Add(msg);
+								result = new IcqMessage();
+								result.Id = dr.GetInt32(dr.GetOrdinal("MESSAGE_ID"));
+								result.ContactUin = dr.GetInt32(dr.GetOrdinal("CONTACT_UIN"));
+								result.IsMy = dr.GetBoolean(dr.GetOrdinal("IS_MY"));
+								result.DateTime = dr.GetDateTime(dr.GetOrdinal("DATE"));
+								result.Text = dr.GetString(dr.GetOrdinal("TEXT"));
 							}
 						}
 					}
@@ -153,18 +189,9 @@ namespace QIParser.DAL
 			return result;
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="uin"></param>
-		/// <param name="year">Год.</param>
-		/// <param name="month">Месяц (число в диапазоне от 1 до 12).</param>
-		/// <returns></returns>
-		public List<IcqMessage> GetRangeByMonth(int uin, int year, int month)
+		public IEnumerable<IcqMessage> GetRange(IcqAccount account, DateTime from, DateTime to)
 		{
 			var result = new List<IcqMessage>();
-			DateTime from = new DateTime(year, month, 1);
-			DateTime to = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
 			try
 			{
@@ -173,10 +200,9 @@ namespace QIParser.DAL
 					using (var cmd = new SqlCommand("[dbo].[ICQ_HISTORY_GET_RANGE]", conn))
 					{
 						cmd.CommandType = CommandType.StoredProcedure;
-
-						cmd.Parameters.AddWithValue("@date_from", from);
-						cmd.Parameters.AddWithValue("@date_to", to);
-						cmd.Parameters.AddWithValue("@uin", uin);
+						cmd.Parameters.AddWithValue("@uin", account.Uin);
+						cmd.Parameters.AddWithValue("@from", from);
+						cmd.Parameters.AddWithValue("@to", to);
 
 						conn.Open();
 
@@ -185,10 +211,11 @@ namespace QIParser.DAL
 							while (dr.Read())
 							{
 								var msg = new IcqMessage();
-								msg.From = dr.GetInt32(dr.GetOrdinal("FROM"));
-								msg.To = dr.GetInt32(dr.GetOrdinal("TO"));
-								msg.Sent = dr.GetDateTime(dr.GetOrdinal("DATE"));
-								msg.MessageText = dr.GetString(dr.GetOrdinal("MESSAGE"));
+								msg.Id = dr.GetInt32(dr.GetOrdinal("MESSAGE_ID"));
+								msg.ContactUin = dr.GetInt32(dr.GetOrdinal("CONTACT_UIN"));
+								msg.IsMy = dr.GetBoolean(dr.GetOrdinal("IS_MY"));
+								msg.DateTime = dr.GetDateTime(dr.GetOrdinal("DATE"));
+								msg.Text = dr.GetString(dr.GetOrdinal("TEXT"));
 
 								result.Add(msg);
 							}

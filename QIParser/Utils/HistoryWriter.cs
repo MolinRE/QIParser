@@ -9,7 +9,7 @@ namespace QIParser.Utils
 		{
 			writer.Invoke($"History size: {SizeTextRepresentation(reader.Size)} ({reader.Size} bytes)");
 			writer.Invoke($"Message count: {reader.MsgCount}");
-			writer.Invoke($"UIN: {reader.UIN}");
+			writer.Invoke($"UIN: {reader.Uin}");
 			writer.Invoke($"Nickname: {reader.Nick}");
 			writer.Invoke("---------------------------------------------------");
 		}

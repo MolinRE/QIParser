@@ -47,7 +47,7 @@ namespace QIParser.DAL
 					{
 						cmd.CommandType = CommandType.StoredProcedure;
 
-						cmd.Parameters.AddWithValue("@uin", account.UIN);
+						cmd.Parameters.AddWithValue("@uin", account.Uin);
 						cmd.Parameters.AddWithValue("@nick", account.Nickname);
 
 						conn.Open();
@@ -89,7 +89,7 @@ namespace QIParser.DAL
 							if (dr.Read())
 							{
 								result = new IcqAccount();
-								result.UIN = dr.GetInt32(dr.GetOrdinal("UIN"));
+								result.Uin = dr.GetInt32(dr.GetOrdinal("UIN"));
 								result.Nickname = dr.GetString(dr.GetOrdinal("NICKNAME"));
 							}
 						}
