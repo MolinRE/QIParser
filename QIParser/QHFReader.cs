@@ -48,41 +48,61 @@ namespace QIParser
 			msg.Signature = br.ReadInt16();
 			if (msg.SignatureMismatch)
 			{
-				Trace.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
-				return true;
+				if (br.ReadByte() == 1)
+				{
+					// В предыдущем сообщении были ошибки и структура съехала.
+					msg.Signature = 1;
+				}
+				else
+				{
+					// Сдвигаем позицию на исходную для достоверности отладки.
+					fs.Position -= 1;
+					Trace.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
+					return true;
+				}
 			}
 			var size = br.ReadInt32();
 			var endOfBlock = size + fs.Position;
-
-			msg.ID = GetNextBlock();
-			msg.Time = UnixTimeStampToDateTime(GetNextBlock());
-			msg.IsMy = GetNextBlock() > 0;
-			var msgLength = GetNextBlock();
-			if (msgLength < 0)
+			
+			try
 			{
-				fs.Position -= 4;
-				msgBytes = ReadBytesUntilNextMessage(msg.ID + 1);
-				msgLength = msgBytes.Length;
-			}
-			else
-			{
-				if (msgLength > size)
+				msg.ID = GetNextBlock();
+				msg.Time = UnixTimeStampToDateTime(GetNextBlock());
+				msg.IsMy = GetNextBlock() > 0;
+				var msgLength = GetNextBlock();
+				if (msgLength < 0)
 				{
 					fs.Position -= 4;
-					msgLength = br.ReadInt16();
+					msgBytes = ReadBytesUntilNextMessage(msg.ID + 1);
+					msgLength = msgBytes.Length;
+				}
+				else
+				{
 					if (msgLength > size)
 					{
-						fs.Position -= 2;
-						msgLength = br.ReadByte();
+						fs.Position -= 4;
+						msgLength = br.ReadInt16();
+						if (msgLength > size)
+						{
+							fs.Position -= 2;
+							msgLength = br.ReadByte();
+						}
 					}
+
+					msgBytes = br.ReadBytes(msgLength);
 				}
 
-				msgBytes = br.ReadBytes(msgLength);
-			}
-			
-			msg.Text = encoding.GetString(DecodeBytes(msgBytes));
+				msg.Text = encoding.GetString(DecodeBytes(msgBytes));
 
-			return true;
+				return true;
+			}
+			catch (ArgumentException ex)
+			{
+				Trace.WriteLine(ex.Message);
+				if (fs.Position == fs.Length)
+					msg.Text = "Сообщение потеряно.";
+				return true;
+			}
 		}
 
 		public Int32 GetSize(Int16 size)
@@ -124,6 +144,10 @@ namespace QIParser
 					{
 						result = GetSize(br.ReadInt16());
 					}
+					break;
+				default:
+					Trace.WriteLine("Unknown message type: " + blockType);
+					result = GetSize(br.ReadInt16());
 					break;
 			}
 
