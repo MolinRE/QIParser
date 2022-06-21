@@ -1,1 +1,3 @@
-QILogReader/bin/
+.idea
+bin
+obj

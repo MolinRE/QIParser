@@ -59,10 +59,12 @@ namespace QIParser.Utils
 						}
 						else
 						{
-							if (msg.Text != null)
+							if (msg?.Text != null)
+							{
 								msg.Text += Environment.NewLine;
+								msg.Text += previousLine;
+							}
 
-							msg.Text += previousLine;
 						}
 					}
 				}
