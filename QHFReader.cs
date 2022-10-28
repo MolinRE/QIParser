@@ -23,6 +23,9 @@ public class QHFReader : IDisposable
         var uinLength = br.ReadInt16();
         Uin = encoding.GetString(br.ReadBytes(uinLength));
         var nickLength = br.ReadInt16();
+
+        //var bytes = br.ReadBytes(nickLength);
+        
         Nick = encoding.GetString(br.ReadBytes(nickLength));
     }
 
@@ -43,7 +46,9 @@ public class QHFReader : IDisposable
     public bool GetNextMessage(QHFMessage msg)
     {
         if (fs.Position >= fs.Length - 24)
+        {
             return false;
+        }
 
         byte[] msgBytes = null;
         //Trace.WriteLine("Block start: " + fs.Position);
@@ -60,7 +65,7 @@ public class QHFReader : IDisposable
             {
                 // Сдвигаем позицию на исходную для достоверности отладки.
                 fs.Position -= 1;
-                Trace.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
+                Console.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
                 return true;
             }
         }
@@ -98,15 +103,20 @@ public class QHFReader : IDisposable
                 msgBytes = br.ReadBytes(msgLength);
             }
 
-            msg.Text = encoding.GetString(DecodeBytes(msgBytes));
+            DecodeBytes(msgBytes);
+            DecodeBytes(msgBytes);
+
+            msg.Text = encoding.GetString(msgBytes);
 
             return true;
         }
         catch (ArgumentException ex)
         {
-            Trace.WriteLine(ex.Message);
+            Console.WriteLine(ex.Message);
             if (fs.Position == fs.Length)
+            {
                 msg.Text = "Сообщение потеряно.";
+            }
             return true;
         }
     }
@@ -150,7 +160,7 @@ public class QHFReader : IDisposable
 
                 break;
             default:
-                Trace.WriteLine("Unknown message type: " + blockType);
+                Console.WriteLine("Unknown message type: " + blockType);
                 result = GetSize(br.ReadInt16());
                 break;
         }
@@ -158,11 +168,12 @@ public class QHFReader : IDisposable
         return result;
     }
 
-    public byte[] DecodeBytes(byte[] array)
+    public void DecodeBytes(byte[] array)
     {
-        for (var i = 0; i < array.Length; i++) array[i] = DecodeByte(array[i], i);
-
-        return array;
+        for (var i = 0; i < array.Length; i++)
+        {
+            array[i] = DecodeByte(array[i], i);
+        }
     }
 
     public byte DecodeByte(byte b, int index)
@@ -200,7 +211,6 @@ public class QHFReader : IDisposable
     public static DateTime UnixTimeStampToDateTime(int unixTimeStamp)
     {
         var dateTime = new DateTime(1970, 1, 1);
-        dateTime = dateTime.AddSeconds(unixTimeStamp);
-        return dateTime;
+        return dateTime.AddSeconds(unixTimeStamp);
     }
 }
