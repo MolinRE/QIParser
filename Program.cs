@@ -15,6 +15,7 @@ Console.WriteLine(Directory.GetCurrentDirectory());
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
 var historyFolderPath = //Console.ReadLine();
     "/Users/new_omega/dev";
+Console.WriteLine(historyFolderPath);
 
 if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPath))
 {
@@ -24,6 +25,7 @@ if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPa
 
 Console.Write("Искать файлы во вложенных папках? [Y/N]: N");
 var searchOption = SearchOption.TopDirectoryOnly;
+Console.WriteLine();
 
 //if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
 
@@ -43,6 +45,7 @@ do
     Console.Write("Введите ваш ник: ");
     userName = //Console.ReadLine();
         "new_omega";
+    Console.WriteLine(userName);
 } while (string.IsNullOrEmpty(userName));
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
@@ -86,14 +89,14 @@ void ConvertFile(string fileName, string outputFolderPath, string userName)
     using var fs = new FileStream(outputFileName, FileMode.Create);
     using var sw = new StreamWriter(fs, Encoding.UTF8);
 
-    HistoryWriter.WriteHeader(sw.WriteLine, reader);
+    HistoryWriter.WriteHeader(Console.WriteLine, reader);
 
     var msg = new QHFMessage();
 
     while (reader.GetNextMessage(msg))
     {
         HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
-        Console.WriteLine(msg.Text);
+        //Console.WriteLine(msg.Text);
     }
 
     Console.WriteLine(outputFileName);

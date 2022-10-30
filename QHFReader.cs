@@ -14,18 +14,40 @@ public class QHFReader : IDisposable
     {
         fs = new FileStream(path, FileMode.Open);
         br = new BinaryReaderBE(fs, encoding);
+        
+        // Заголовок
+        Console.WriteLine("Чтение заголовка");
 
-        fs.Position = 4;
+        var sign = string.Concat(br.ReadChars(3));
+        if (sign != "QHF")
+        {
+            Console.WriteLine($"Signature mismatch! Expected 'QHF', got '{sign}'");
+        }
+        var version = (QHFVersion) br.ReadByte();
+        Console.WriteLine($"History file version: {version.ToString()}");
+        
+        //fs.Position = 4;
         Size = br.ReadInt32();
-        fs.Position = 34;
+        var unknown1 = br.ReadBytes(10);
+        var unknown2 = br.ReadBytes(16);
+        // fs.Position = 34;
         MsgCount = br.ReadInt32();
-        fs.Position = 44;
+        var msgCount = br.ReadInt32();
+        if (MsgCount != msgCount)
+        {
+            Console.WriteLine($"Количество сообщений не совпадает!\nОжидаемое {msgCount}, реальное {MsgCount}.");
+        }
+
+        var reserved = br.ReadInt16();
+        
+        Console.WriteLine("Заголовок ОК");
+        
+        // fs.Position = 44;
+        // Блок данных UIN и Nickname
         var uinLength = br.ReadInt16();
         Uin = encoding.GetString(br.ReadBytes(uinLength));
         var nickLength = br.ReadInt16();
-
         //var bytes = br.ReadBytes(nickLength);
-        
         Nick = encoding.GetString(br.ReadBytes(nickLength));
     }
 
@@ -69,6 +91,8 @@ public class QHFReader : IDisposable
                 return true;
             }
         }
+        
+        
 
         var size = br.ReadInt32();
         var endOfBlock = size + fs.Position;
