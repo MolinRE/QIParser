@@ -65,6 +65,32 @@ public class QHFReader : IDisposable
         fs.Close();
     }
 
+    public void ReadQip2010(QHFMessage msg)
+    {
+        msg.Signature = br.ReadInt16();
+        var blockSize = br.ReadInt32();
+
+        // Тип поля с id сообщения - Всегда 1
+        var fieldType = br.ReadInt16();
+        // Размер поля - всегда 4
+        var fieldSize = br.ReadInt16();
+        // Номер сообщения
+        var id = br.ReadInt32();
+        // Тип поля с датой сообщения - всегда 2
+        fieldType = br.ReadInt16();
+        // Размер поля -- всегда 4
+        fieldSize = br.ReadInt16();
+        // Дата и время отправки в Unix time
+        var time = br.ReadInt32();
+        // Тип поля с ?? - всегда 3
+        fieldType = br.ReadInt16();
+        // ??? -- всегда 3
+        fieldSize = br.ReadInt16();
+        // Входящее или исходящее
+        var isMy = br.ReadBoolean();
+
+    }
+    
     public bool GetNextMessage(QHFMessage msg)
     {
         if (fs.Position >= fs.Length - 24)
