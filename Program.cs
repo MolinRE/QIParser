@@ -14,7 +14,8 @@ Console.WriteLine(Directory.GetCurrentDirectory());
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
 var historyFolderPath = //Console.ReadLine();
-    "/Users/new_omega/dev";
+    @"C:\Users\Selecty\Documents\QIP Infium\[qhf]";
+    //@"C:\Users\Selecty\Documents\QIParser Output";
 Console.WriteLine(historyFolderPath);
 
 if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPath))
@@ -50,7 +51,7 @@ do
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
 var outputFolderPath = //Console.ReadLine();
-    "/Users/new_omega/dev";
+    @"C:\Users\Selecty\Documents\QIParser Output";
 
 if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath))
 {

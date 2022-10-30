@@ -67,32 +67,64 @@ public class QHFReader : IDisposable
 
     public void ReadQip2010(QHFMessage msg)
     {
-        msg.Signature = br.ReadInt16();
-        var blockSize = br.ReadInt32();
+        while (true)
+        {
+            var start = fs.Position;
 
-        // Тип поля с id сообщения - Всегда 1
-        var fieldType = br.ReadInt16();
-        // Размер поля - всегда 4
-        var fieldSize = br.ReadInt16();
-        // Номер сообщения
-        var id = br.ReadInt32();
-        // Тип поля с датой сообщения - всегда 2
-        fieldType = br.ReadInt16();
-        // Размер поля -- всегда 4
-        fieldSize = br.ReadInt16();
-        // Дата и время отправки в Unix time
-        var time = br.ReadInt32();
-        // Тип поля с ?? - всегда 3
-        fieldType = br.ReadInt16();
-        // ??? -- всегда 3
-        fieldSize = br.ReadInt16();
-        // Входящее или исходящее
-        var isMy = br.ReadBoolean();
+            msg.Signature = br.ReadInt16();
+            var blockSize = br.ReadInt32();
+
+            // Тип поля с id сообщения - Всегда 1
+            var fieldType = br.ReadInt16();
+            // Размер поля - всегда 4
+            var fieldSize = br.ReadInt16();
+            // Номер сообщения
+            var id = br.ReadInt32();
+            // Тип поля с датой сообщения - всегда 2
+            fieldType = br.ReadInt16();
+            // Размер поля -- всегда 4
+            fieldSize = br.ReadInt16();
+            // Дата и время отправки в Unix time
+            var time = br.ReadInt32();
+            var timeHuman = UnixTimeStampToDateTime(time);
+
+            // Тип поля с ?? - всегда 3
+            fieldType = br.ReadInt16();
+            // ??? -- всегда 3
+            fieldSize = br.ReadInt16();
+            // Входящее или исходящее
+            var isMy = br.ReadBoolean();
+            // Тип поля = 0x0f
+            fieldType = br.ReadInt16();
+            // Размер поля = 0x04  
+            fieldSize = br.ReadInt16();
+            // Размер самого сообщения  
+            var msgSize = br.ReadInt16();
+            var end = fs.Position;
+            var text = br.ReadBytes(msgSize);
+
+            DecodeBytes(text);
+
+            var textDecoded = encoding.GetString(text);
+
+            var diff = end - start;
+            
+            //Console.WriteLine($"Размер блока сообщения ({blockSize}) = Размер самого сообщения ({msgSize}) + размер QHFRecord (33, {diff}) - 6 ");
+
+            var check = msgSize + diff - 6;
+
+            if (check != blockSize)
+            {
+                Console.WriteLine($"Размер блока не совпадает (ожидал {blockSize}, получил {check})");
+            }
+        }
 
     }
     
     public bool GetNextMessage(QHFMessage msg)
     {
+        ReadQip2010(msg);
+
         if (fs.Position >= fs.Length - 24)
         {
             return false;
