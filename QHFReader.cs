@@ -99,6 +99,16 @@ public class QHFReader : IDisposable
 
         try
         {
+            // QIP 2010
+            var fieldType = br.ReadInt16();
+            var fieldSize = br.ReadInt16();
+            var id = br.ReadInt32();
+            fieldType = br.ReadInt16();
+            fieldSize = br.ReadInt16();
+            var time = br.ReadInt32();
+            
+            
+            
             msg.ID = GetNextBlock();
             msg.Time = UnixTimeStampToDateTime(GetNextBlock());
             msg.IsMy = GetNextBlock() > 0;
