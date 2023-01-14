@@ -6,19 +6,19 @@ public class HistoryWriter
 {
     public static void WriteHeader(Action<string> writer, QHFReader reader)
     {
-        writer.Invoke($"History size: {SizeTextRepresentation(reader.Size)} ({reader.Size} bytes)");
-        writer.Invoke($"Message count: {reader.MsgCount}");
-        writer.Invoke($"UIN: {reader.Uin}");
-        writer.Invoke($"Nickname: {reader.Nick}");
-        writer.Invoke("---------------------------------------------------");
+        writer($"History size: {SizeTextRepresentation(reader.Size)} ({reader.Size} bytes)");
+        writer($"Message count: {reader.MsgCount}");
+        writer($"UIN: {reader.Uin}");
+        writer($"Nickname: {reader.Nick}");
+        writer("---------------------------------------------------");
     }
 
     public static void WriteBody(Action<string> writer, QHFMessage msg, string myNick, string contactNick)
     {
         var sender = msg.IsMy ? myNick : contactNick;
-        writer.Invoke($"{sender} [{msg.Time:dd.MM.yyyy HH:mm:ss}]");
-        writer.Invoke(msg.Text);
-        writer.Invoke("");
+        writer($"{sender} [{msg.Time:dd.MM.yyyy HH:mm:ss}]");
+        writer(msg.Text);
+        writer("");
     }
 
     public static string SizeTextRepresentation(long size)
@@ -51,6 +51,6 @@ public class HistoryWriter
             }
         }
 
-        return string.Format("{0:00.##} {1}", fullSize, bytes);
+        return $"{fullSize:00.##} {bytes}";
     }
 }

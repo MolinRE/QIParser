@@ -43,7 +43,9 @@ public class QHFReader : IDisposable
     public bool GetNextMessage(QHFMessage msg)
     {
         if (fs.Position >= fs.Length - 24)
+        {
             return false;
+        }
 
         byte[] msgBytes = null;
         //Trace.WriteLine("Block start: " + fs.Position);
@@ -105,8 +107,11 @@ public class QHFReader : IDisposable
         catch (ArgumentException ex)
         {
             Trace.WriteLine(ex.Message);
+
             if (fs.Position == fs.Length)
+            {
                 msg.Text = "Сообщение потеряно.";
+            }
             return true;
         }
     }

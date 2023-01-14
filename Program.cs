@@ -11,7 +11,7 @@ QIParser, версия 1.0.0.
 ");
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
-var historyFolderPath = Console.ReadLine();
+var historyFolderPath = @"C:\Users\Selecty\Documents\QIP Infium\[qhf]";//Console.ReadLine();
 
 if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPath))
 {
@@ -22,7 +22,7 @@ if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPa
 Console.Write("Искать файлы во вложенных папках? [Y/N]:");
 var searchOption = SearchOption.TopDirectoryOnly;
 
-if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
+// if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
 
 var historyFiles = Directory.GetFiles(historyFolderPath, "*.?hf", searchOption);
 
@@ -38,11 +38,11 @@ var userName = string.Empty;
 do
 {
     Console.Write("Введите ваш ник: ");
-    userName = Console.ReadLine();
+    userName = "Омегыч"; //Console.ReadLine();
 } while (string.IsNullOrEmpty(userName));
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
-var outputFolderPath = Console.ReadLine();
+var outputFolderPath = @"C:\Users\Selecty\Documents\QIP Infium\[qhf]"; //Console.ReadLine();
 
 if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath))
 {
@@ -56,7 +56,7 @@ Directory.CreateDirectory(outputFolderPath);
 foreach (var fileName in historyFiles)
     try
     {
-        ConvertFile(fileName, outputFolderPath, userName);
+        ConvertToHtml(fileName, outputFolderPath, userName);
     }
     catch (Exception e)
     {
@@ -85,7 +85,34 @@ void ConvertFile(string fileName, string outputFolderPath, string userName)
 
     var msg = new QHFMessage();
 
-    while (reader.GetNextMessage(msg)) HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
+    while (reader.GetNextMessage(msg))
+    {
+        HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
+    }
+
+    Console.WriteLine(outputFileName);
+}
+
+void ConvertToHtml(string fileName, string outputFolderPath, string userName)
+{
+    using var reader = new QHFReader(fileName);
+
+    var fileNameWithoutExtension = CleanFileName(reader.Nick);
+    var outputFileName = Path.Combine(outputFolderPath, $"{fileNameWithoutExtension}.html");
+
+    if (File.Exists(outputFileName))
+    {
+        var count = Directory.GetFiles(outputFolderPath, $"{fileNameWithoutExtension}_*.html").Length;
+        fileNameWithoutExtension = fileNameWithoutExtension + "_" + (count + 1);
+        outputFileName = Path.Combine(outputFolderPath, $"{fileNameWithoutExtension}.html");
+    }
+
+    using var fs = new FileStream(outputFileName, FileMode.Create);
+    using var sw = new StreamWriter(fs, Encoding.UTF8);
+
+    var writer = new HtmlWriter();
+    writer.WriteAll(reader, userName);
+    sw.Write(writer._content);
 
     Console.WriteLine(outputFileName);
 }
