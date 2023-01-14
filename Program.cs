@@ -107,14 +107,17 @@ void ConvertToHtml(string fileName, string outputFolderPath, string userName)
         outputFileName = Path.Combine(outputFolderPath, $"{fileNameWithoutExtension}.html");
     }
 
+    Console.WriteLine(outputFileName);
+
     using var fs = new FileStream(outputFileName, FileMode.Create);
     using var sw = new StreamWriter(fs, Encoding.UTF8);
+    
+    Console.WriteLine("Введите адрес папки с файлами:");
+    string filesDirectory = Console.ReadLine();
 
-    var writer = new HtmlWriter();
+    var writer = new HtmlWriter(filesDirectory);
     writer.WriteAll(reader, userName);
     sw.Write(writer._content);
-
-    Console.WriteLine(outputFileName);
 }
 
 string CleanFileName(string readerNick)

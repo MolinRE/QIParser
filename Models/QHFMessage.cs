@@ -19,8 +19,12 @@ public class QHFMessage
     public bool Equals(IcqMessage msg)
     {
         if (msg.IsMy == IsMy)
+        {
             if (DateTimeEquals(msg.DateTime, Time))
+            {
                 return true;
+            }
+        }
 
         return false;
     }

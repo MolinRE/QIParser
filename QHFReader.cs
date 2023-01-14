@@ -73,6 +73,12 @@ public class QHFReader : IDisposable
         try
         {
             msg.ID = GetNextBlock();
+
+            if (msg.ID == 28)
+            {
+                Console.WriteLine();
+            }
+            
             msg.Time = UnixTimeStampToDateTime(GetNextBlock());
             msg.IsMy = GetNextBlock() > 0;
             var msgLength = GetNextBlock();

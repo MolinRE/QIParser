@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <title>@title</title>
     <style type="text/css">
+        .image-container {
+            width: 300px;
+            height: 300px;
+        }
+        img {
+            object-fit: contain;
+            height:300px;
+        }
         .tabs { width: 100%; padding: 0px; margin: 0 auto; }
         .tabs>input { display: none; }
         .tabs>div {
@@ -29,11 +37,14 @@
             background: #FFFFFF;
         }
         #tab_1:checked ~ #txt_1,
-        #tab_2:checked ~ #txt_2 { display: block; }
+        #tab_2:checked ~ #txt_2,
+        #tab_3:checked ~ #txt_3,
+        #tab_4:checked ~ #txt_4 { display: block; }
     </style>
 </head>
 <body>
 @header
+@dates
 <hr>
 <div class="tabs">
     <input type="radio" name="inset" value="" id="tab_1" checked>
@@ -42,11 +53,23 @@
     <input type="radio" name="inset" value="" id="tab_2">
     <label for="tab_2">Ссылки</label>
 
+    <input type="radio" name="inset" value="" id="tab_3">
+    <label for="tab_3">Изображения</label>
+
+    <input type="radio" name="inset" value="" id="tab_4">
+    <label for="tab_4">Аудио</label>
+
     <div id="txt_1">
         @history
     </div>
     <div id="txt_2">
         @links
+    </div>
+    <div id="txt_3">
+        @images
+    </div>
+    <div id="txt_4">
+        @audio
     </div>
 </div>
 
