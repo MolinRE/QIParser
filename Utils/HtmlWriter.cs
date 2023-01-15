@@ -61,8 +61,16 @@ public class HtmlWriter
     {
         Links = new List<LinkInMessage>();
         _content = new StringBuilder(File.ReadAllText(@"C:\Users\Selecty\dev\personal\QIParser\Templates\History.html"));
-        var dir = new DirectoryInfo(filesDirectory);
-        _files = dir.GetFiles();
+
+        if (string.IsNullOrEmpty(filesDirectory))
+        {
+            _files = Array.Empty<FileInfo>();
+        }
+        else
+        {
+            var dir = new DirectoryInfo(filesDirectory);
+            _files = dir.GetFiles();
+        }
         _count = 0;
     }
 

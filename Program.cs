@@ -12,6 +12,7 @@ QIParser, версия 1.1.0.
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
 var historyFolderPath = @"C:\Users\Selecty\Documents\QIP Infium\[qhf]";//Console.ReadLine();
+Console.WriteLine(historyFolderPath);
 
 if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPath))
 {
@@ -21,7 +22,7 @@ if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPa
 
 Console.Write("Искать файлы во вложенных папках? [Y/N]: ");
 var searchOption = SearchOption.TopDirectoryOnly;
-Console.WriteLine();
+Console.WriteLine("N");
 
 // if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
 
@@ -40,10 +41,13 @@ do
 {
     Console.Write("Введите ваш ник: ");
     userName = "Омегыч"; //Console.ReadLine();
+    Console.WriteLine(userName);
 } while (string.IsNullOrEmpty(userName));
+
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
 var outputFolderPath = @"C:\Users\Selecty\Documents\QIP Infium\[qhf]"; //Console.ReadLine();
+Console.WriteLine(outputFolderPath);
 
 if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath))
 {
