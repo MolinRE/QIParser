@@ -5,9 +5,9 @@ using System.Text;
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 Console.WriteLine(@"
-QIParser, версия 1.0.0. 
+QIParser, версия 1.1.0. 
 Автор: Константин Комаров.
-Описание: Конвертер файлов истории из QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
+Описание: Конвертер файлов истории QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
 ");
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
@@ -19,10 +19,14 @@ if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPa
     return;
 }
 
-Console.Write("Искать файлы во вложенных папках? [Y/N]:");
+Console.Write("Искать файлы во вложенных папках? [Y/N]: ");
 var searchOption = SearchOption.TopDirectoryOnly;
+Console.WriteLine();
 
-if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
+if (Console.ReadLine()?.ToLower() == "y")
+{
+    searchOption = SearchOption.AllDirectories;
+}
 
 var historyFiles = Directory.GetFiles(historyFolderPath, "*.?hf", searchOption);
 
@@ -85,7 +89,10 @@ void ConvertFile(string fileName, string outputFolderPath, string userName)
 
     var msg = new QHFMessage();
 
-    while (reader.GetNextMessage(msg)) HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
+    while (reader.GetNextMessage(msg))
+    {
+        HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
+    }
 
     Console.WriteLine(outputFileName);
 }
