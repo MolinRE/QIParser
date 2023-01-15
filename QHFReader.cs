@@ -25,7 +25,7 @@ public class QHFReader : IDisposable
         br = new BinaryReaderBE(fs, encoding);
         
         // Заголовок
-        Console.WriteLine("Чтение заголовка");
+        Debug.WriteLine("Чтение заголовка");
 
         var sign = string.Concat(br.ReadChars(3));
         if (sign != "QHF")
@@ -33,7 +33,7 @@ public class QHFReader : IDisposable
             Console.WriteLine($"Подпись не совпадает! Ожидаемая QHF, реальная {sign}");
         }
         Version = (QHFVersion) br.ReadByte();
-        Console.WriteLine($"Версия файла истории: {Version.ToString()}");
+        Debug.WriteLine($"Версия файла истории: {Version.ToString()}");
         
         //fs.Position = 4;
         Size = br.ReadInt32();
@@ -54,7 +54,7 @@ public class QHFReader : IDisposable
         // Зарезервировано
         br.ReadInt16();
         
-        Console.WriteLine("Заголовок ОК");
+        Debug.WriteLine("Заголовок ОК");
         
         // fs.Position = 44;
         // Блок данных UIN и Nickname
@@ -64,113 +64,8 @@ public class QHFReader : IDisposable
         //var bytes = br.ReadBytes(nickLength);
         Nick = encoding.GetString(br.ReadBytes(nickLength));
     }
-
-    private void ReadQip2010(QHFMessage msg)
-    {
-        var start = fs.Position;
-
-        msg.Signature = br.ReadInt16();
-        var blockSize = br.ReadInt32();
-
-        // Тип поля с id сообщения - Всегда 1
-        var fieldType = br.ReadInt16();
-        // Размер поля - всегда 4
-        var fieldSize = br.ReadInt16();
-        // Номер сообщения
-        msg.ID = br.ReadInt32();
-        // Тип поля с датой сообщения - всегда 2
-        fieldType = br.ReadInt16();
-        // Размер поля -- всегда 4
-        fieldSize = br.ReadInt16();
-        // Дата и время отправки в Unix time
-        var time = br.ReadInt32();
-        msg.Time = UnixTimeStampToDateTime(time);
-
-        // Тип поля с ?? - всегда 3
-        fieldType = br.ReadInt16();
-        // ??? -- всегда 3
-        fieldSize = br.ReadInt16();
-        // Входящее или исходящее
-        msg.IsMy = br.ReadBoolean();
-        // Тип поля = 0x0f
-        fieldType = br.ReadInt16();
-        // Размер поля = 0x04  
-        fieldSize = br.ReadInt16();
-        // Размер самого сообщения  
-        var msgSize = br.ReadInt16();
-        var end = fs.Position;
-        var text = br.ReadBytes(msgSize);
-
-        DecodeBytes(text);
-        // DecodeBytes(text);
-
-        msg.Text = encoding.GetString(text);
-
-        var diff = end - start;
-
-        //Console.WriteLine($"Размер блока сообщения ({blockSize}) = Размер самого сообщения ({msgSize}) + размер QHFRecord (33, {diff}) - 6 ");
-
-        var check = msgSize + diff - 6;
-
-        if (check != blockSize)
-        {
-            Console.WriteLine($"Размер блока не совпадает (ожидал {blockSize}, получил {check})");
-        }
-    }
-
-    private void ReadQipInfium(QHFMessage msg)
-    {
-        var start = fs.Position;
-
-        msg.Signature = br.ReadInt16();
-        var blockSize = br.ReadInt32();
-
-        // Тип поля с id сообщения - Всегда 1
-        var fieldType = br.ReadInt16();
-        // Размер поля - всегда 4
-        var fieldSize = br.ReadInt16();
-        // Номер сообщения
-        msg.ID = br.ReadInt32();
-        // Тип поля с датой сообщения - всегда 2
-        fieldType = br.ReadInt16();
-        // Размер поля -- всегда 4
-        fieldSize = br.ReadInt16();
-        // Дата и время отправки в Unix time
-        var time = br.ReadInt32();
-        msg.Time = UnixTimeStampToDateTime(time);
-
-        // Тип поля с ?? - всегда 3
-        fieldType = br.ReadInt16();
-        // ??? -- всегда 3
-        fieldSize = br.ReadInt16();
-        // Входящее или исходящее
-        msg.IsMy = br.ReadBoolean();
-        // Тип поля = 0x0f
-        fieldType = br.ReadInt16();
-        // Размер поля = 0x04  
-        fieldSize = br.ReadInt16();
-        // Размер самого сообщения  
-        var msgSize = br.ReadInt32();
-        var end = fs.Position;
-        var text = br.ReadBytes(msgSize);
-
-        DecodeBytes(text);
-
-        msg.Text = encoding.GetString(text);
-
-        var diff = end - start;
-
-        //Console.WriteLine($"Размер блока сообщения ({blockSize}) = Размер самого сообщения ({msgSize}) + размер QHFRecord (33, {diff}) - 6 ");
-
-        var check = msgSize + diff - 6;
-
-        if (check != blockSize)
-        {
-            Console.WriteLine($"Размер блока не совпадает (ожидал {blockSize}, получил {check})");
-        }
-    }
     
-    private void ReadQipUnknown(QHFMessage msg)
+    private void ReadMessage(QHFMessage msg, QHFVersion version)
     {
         var start = fs.Position;
 
@@ -189,7 +84,7 @@ public class QHFReader : IDisposable
         fieldSize = br.ReadInt16();
         // Дата и время отправки в Unix time
         var time = br.ReadInt32();
-        msg.Time = UnixTimeStampToDateTime(time);
+        msg.Time = DateTimeHelper.UnixTimeStampToDateTime(time);
 
         // Тип поля с ?? - всегда 3
         fieldType = br.ReadInt16();
@@ -201,13 +96,18 @@ public class QHFReader : IDisposable
         fieldType = br.ReadInt16();
         // Размер поля = 0x04  
         fieldSize = br.ReadInt16();
-        // Размер самого сообщения  
-        var msgSize = br.ReadInt16();
+        // Размер самого сообщения
+
+        int msgSize = version == QHFVersion.QipInfiumOrHigher ? br.ReadInt32() : br.ReadInt16();
         var end = fs.Position;
         var text = br.ReadBytes(msgSize);
 
         DecodeBytes(text);
-        DecodeBytes(text);
+
+        if (version == QHFVersion.Unknown)
+        {
+            DecodeBytes(text);
+        }
 
         msg.Text = encoding.GetString(text);
 
@@ -230,115 +130,8 @@ public class QHFReader : IDisposable
             return false;
         }
 
-        try
-        {
-            switch (Version)
-            {
-                case QHFVersion.Qip2010:
-                    ReadQip2010(msg);
-                    break;
-                case QHFVersion.QipInfiumOrHigher:
-                    ReadQipInfium(msg);
-                    break;
-                case QHFVersion.Unknown:
-                    ReadQipUnknown(msg);
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            var position = fs.Position;
-            var lentgh = fs.Length;
-        }
-
+        ReadMessage(msg, Version);
         return true;
-
-        // if (fs.Position >= fs.Length - 24)
-        // {
-        //     return false;
-        // }
-        //
-        // byte[] msgBytes = null;
-        // //Trace.WriteLine("Block start: " + fs.Position);
-        // msg.Signature = br.ReadInt16();
-        //
-        // if (msg.SignatureMismatch)
-        // {
-        //     if (br.ReadByte() == 1)
-        //     {
-        //         // В предыдущем сообщении были ошибки и структура съехала.
-        //         msg.Signature = 1;
-        //     }
-        //     else
-        //     {
-        //         // Сдвигаем позицию на исходную для достоверности отладки.
-        //         fs.Position -= 1;
-        //         Console.WriteLine($"{Uin} ({Nick}). Signature mismatch. (sign={msg.Signature})");
-        //         return true;
-        //     }
-        // }
-
-
-
-        // var size = br.ReadInt32();
-        // var endOfBlock = size + fs.Position;
-        //
-        // try
-        // {
-        //     // QIP 2010
-        //     var fieldType = br.ReadInt16();
-        //     var fieldSize = br.ReadInt16();
-        //     var id = br.ReadInt32();
-        //     fieldType = br.ReadInt16();
-        //     fieldSize = br.ReadInt16();
-        //     var time = br.ReadInt32();
-        //     
-        //     
-        //     
-        //     msg.ID = GetNextBlock();
-        //     msg.Time = UnixTimeStampToDateTime(GetNextBlock());
-        //     msg.IsMy = GetNextBlock() > 0;
-        //     var msgLength = GetNextBlock();
-        //
-        //     if (msgLength < 0)
-        //     {
-        //         fs.Position -= 4;
-        //         msgBytes = ReadBytesUntilNextMessage(msg.ID + 1);
-        //         msgLength = msgBytes.Length;
-        //     }
-        //     else
-        //     {
-        //         if (msgLength > size)
-        //         {
-        //             fs.Position -= 4;
-        //             msgLength = br.ReadInt16();
-        //
-        //             if (msgLength > size)
-        //             {
-        //                 fs.Position -= 2;
-        //                 msgLength = br.ReadByte();
-        //             }
-        //         }
-        //
-        //         msgBytes = br.ReadBytes(msgLength);
-        //     }
-        //
-        //     DecodeBytes(msgBytes);
-        //     DecodeBytes(msgBytes);
-        //
-        //     msg.Text = encoding.GetString(msgBytes);
-        //
-        //     return true;
-        // }
-        // catch (ArgumentException ex)
-        // {
-        //     Console.WriteLine(ex.Message);
-        //     if (fs.Position == fs.Length)
-        //     {
-        //         msg.Text = "Сообщение потеряно.";
-        //     }
-        //     return true;
-        // }
     }
 
     public int GetSize(short size)
@@ -356,39 +149,7 @@ public class QHFReader : IDisposable
         }
     }
 
-    public int GetNextBlock()
-    {
-        var result = 0;
-        var blockType = (QHFMessageType) br.ReadInt16();
-
-        //Trace.WriteLine(blockType);
-        switch (blockType)
-        {
-            case QHFMessageType.MessageOnline:
-            case QHFMessageType.MessageDateTime:
-            case QHFMessageType.MessageAuthRequest:
-            case QHFMessageType.MessageAuthRequestOk:
-            case QHFMessageType.MessageAddRequest:
-            case QHFMessageType.MessageOffline:
-                result = GetSize(br.ReadInt16());
-                break;
-            case QHFMessageType.MessageIsMy:
-                if (br.ReadInt16() == 3)
-                    result = br.ReadByte();
-                else
-                    result = GetSize(br.ReadInt16());
-
-                break;
-            default:
-                Console.WriteLine("Unknown message type: " + blockType);
-                result = GetSize(br.ReadInt16());
-                break;
-        }
-
-        return result;
-    }
-
-    public void DecodeBytes(byte[] array)
+    private void DecodeBytes(byte[] array)
     {
         for (var i = 0; i < array.Length; i++)
         {
@@ -396,44 +157,7 @@ public class QHFReader : IDisposable
         }
     }
 
-    public byte DecodeByte(byte b, int index)
-    {
-        return (byte) (byte.MaxValue - b - index - 1);
-    }
-
-    public byte[] ReadBytesUntilNextMessage(int nextMessageId)
-    {
-        var result = new List<byte>();
-
-        if (fs.Length - fs.Position > 14)
-        {
-            var sign = br.ReadInt16();
-            fs.Position += 8;
-            var msgId = br.ReadInt32();
-
-            while (sign != 1 || msgId != nextMessageId)
-            {
-                fs.Position -= 14;
-                var nextByte = br.ReadByte();
-                result.Add(nextByte);
-
-                sign = br.ReadInt16();
-                fs.Position += 8;
-                msgId = br.ReadInt32();
-            }
-
-            fs.Position -= 14;
-        }
-
-        return result.ToArray();
-    }
-
-    public static DateTime UnixTimeStampToDateTime(int unixTimeStamp)
-    {
-        var dateTime = new DateTime(1970, 1, 1);
-        return dateTime.AddSeconds(unixTimeStamp);
-    }
-
+    private byte DecodeByte(byte b, int index) => (byte) (byte.MaxValue - b - index - 1);
 
     public void Dispose()
     {
