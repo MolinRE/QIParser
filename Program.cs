@@ -13,9 +13,7 @@ QIParser, версия 1.0.0.
 Console.WriteLine(Directory.GetCurrentDirectory());
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
-var historyFolderPath = //Console.ReadLine();
-    // @"C:\Users\Selecty\Documents\QIP Infium\badddd";
-    @"C:\Users\Selecty\Documents\QIP Infium\[qhf]";
+var historyFolderPath = Console.ReadLine();
 
 Console.WriteLine(historyFolderPath);
 
@@ -29,7 +27,10 @@ Console.Write("Искать файлы во вложенных папках? [Y/
 var searchOption = SearchOption.TopDirectoryOnly;
 Console.WriteLine();
 
-//if (Console.ReadLine()?.ToLower() == "y") searchOption = SearchOption.AllDirectories;
+if (Console.ReadLine()?.ToLower() == "y")
+{
+    searchOption = SearchOption.AllDirectories;
+}
 
 var historyFiles = Directory.GetFiles(historyFolderPath, "*.?hf", searchOption);
 
@@ -45,14 +46,12 @@ var userName = string.Empty;
 do
 {
     Console.Write("Введите ваш ник: ");
-    userName = //Console.ReadLine();
-        "new_omega";
+    userName = Console.ReadLine();
     Console.WriteLine(userName);
 } while (string.IsNullOrEmpty(userName));
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
-var outputFolderPath = //Console.ReadLine();
-    historyFolderPath;
+var outputFolderPath = Console.ReadLine();
 
 if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath))
 {
@@ -60,7 +59,7 @@ if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath
     return;
 }
 
-//outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparatorChar), $"Конвертация {DateTime.Now:ddMMyyyy_HHmmss}");
+outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparatorChar), $"Конвертация {DateTime.Now:ddMMyyyy_HHmmss}");
 Directory.CreateDirectory(outputFolderPath);
 
 foreach (var fileName in historyFiles)
@@ -71,7 +70,6 @@ foreach (var fileName in historyFiles)
     catch (Exception e)
     {
         Console.WriteLine("Ошибка при конвертации файла:");
-        Console.WriteLine(e);
         Console.WriteLine(fileName);
     }
 
