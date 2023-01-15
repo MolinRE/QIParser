@@ -1,10 +1,11 @@
 namespace QIParser.Utils;
 
-public class DateTimeHelper
+public static class DateTimeHelper
 {
+    private static readonly DateTime UnixStart = new(1970, 1, 1);
+    
     public static DateTime UnixTimeStampToDateTime(int unixTimeStamp)
     {
-        var dateTime = new DateTime(1970, 1, 1);
-        return dateTime.AddSeconds(unixTimeStamp);
+        return UnixStart.AddSeconds(unixTimeStamp);
     }
 }

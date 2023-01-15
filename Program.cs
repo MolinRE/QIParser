@@ -5,9 +5,9 @@ using System.Text;
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 Console.WriteLine(@"
-QIParser, версия 1.0.0. 
+QIParser, версия 1.1.0. 
 Автор: Константин Комаров.
-Описание: Конвертер файлов истории из QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
+Описание: Конвертер файлов истории QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
 ");
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
