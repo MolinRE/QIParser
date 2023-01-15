@@ -111,8 +111,6 @@ public class QHFReader : IDisposable
 
         var diff = end - start;
 
-        Debug.WriteLine($"Размер блока сообщения ({blockSize}) = Размер самого сообщения ({msgSize}) + размер QHFRecord (33, {diff}) - 6");
-
         // Почему 6 -- неизвестно
         var check = msgSize + diff - 6;
         if (check != blockSize)
