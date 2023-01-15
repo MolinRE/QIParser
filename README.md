@@ -1,4 +1,17 @@
-# Структура файла #
+# QIParser
+
+Конвертер файлов истории из QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
+
+## Как запустить
+
+1. Скачать .NET 6 runtime: https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime
+2. Скачать ZIP-архив из последнего релиза (https://github.com/MolinRE/QIParser/releases)
+3. Запустить конвертер:
+```
+dotnet QIParser.dll
+```
+
+## Структура файла истории #
 
 ## Заголовок файла ##
 
