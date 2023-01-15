@@ -20,7 +20,6 @@ public class BinaryReaderBE : BinaryReader
     public BinaryReaderBE(Stream input)
         : base(input)
     {
-        new BinaryReader(input);
     }
 
     /// <summary>
@@ -80,4 +79,10 @@ public class BinaryReaderBE : BinaryReader
         Array.Reverse(data);
         return BitConverter.ToUInt64(data, 0);
     }
+
+    // алиас
+    public int ReadDWORD() => ReadInt32();
+    
+    // алиас
+    public int ReadWord() => ReadInt16();
 }

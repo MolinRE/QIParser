@@ -14,8 +14,9 @@ Console.WriteLine(Directory.GetCurrentDirectory());
 
 Console.WriteLine("Введите адрес папки, которая содержит файлы истории (*.AHF, *.BHD, *.QHF):");
 var historyFolderPath = //Console.ReadLine();
+    // @"C:\Users\Selecty\Documents\QIP Infium\badddd";
     @"C:\Users\Selecty\Documents\QIP Infium\[qhf]";
-    //@"C:\Users\Selecty\Documents\QIParser Output";
+
 Console.WriteLine(historyFolderPath);
 
 if (string.IsNullOrEmpty(historyFolderPath) || !Directory.Exists(historyFolderPath))
@@ -51,7 +52,7 @@ do
 
 Console.WriteLine("Введите адрес папки, куда будут сохранены сконвертированные файлы истории:");
 var outputFolderPath = //Console.ReadLine();
-    @"C:\Users\Selecty\Documents\QIParser Output";
+    historyFolderPath;
 
 if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath))
 {
@@ -59,7 +60,7 @@ if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath
     return;
 }
 
-outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparatorChar), $"Конвертация {DateTime.Now:ddMMyyyy_HHmmss}");
+//outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparatorChar), $"Конвертация {DateTime.Now:ddMMyyyy_HHmmss}");
 Directory.CreateDirectory(outputFolderPath);
 
 foreach (var fileName in historyFiles)
@@ -70,6 +71,7 @@ foreach (var fileName in historyFiles)
     catch (Exception e)
     {
         Console.WriteLine("Ошибка при конвертации файла:");
+        Console.WriteLine(e);
         Console.WriteLine(fileName);
     }
 
