@@ -61,6 +61,20 @@ public class QHFReader : IDisposable
         var nickLength = br.ReadInt16();
         Nick = Encoding.GetString(br.ReadBytes(nickLength));
     }
+
+    public static QhfHeader GetHeader(string file)
+    {
+        using var reader = new QHFReader(file);
+        return new QhfHeader
+        {
+            Nick = reader.Nick,
+            MsgCount = reader.MsgCount,
+            Size = reader.MsgCount,
+            Uin = reader.Uin,
+            Version = reader.Version,
+            FileName = file
+        };
+    }
     
     private void ReadMessage(QHFMessage msg, QHFVersion version)
     {

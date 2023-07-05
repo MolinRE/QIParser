@@ -2,6 +2,8 @@
 using QIParser.Utils;
 using System.Text;
 
+List<QhfInfo> meta;
+
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 Console.WriteLine(@"
@@ -36,6 +38,8 @@ if (historyFiles.Length == 0)
     return;
 }
 
+meta = new List<QhfInfo>(historyFiles.Length);
+
 Console.WriteLine($"Найдено файлов: {historyFiles.Length}");
 var userName = string.Empty;
 
@@ -57,16 +61,98 @@ if (string.IsNullOrEmpty(outputFolderPath) || !Directory.Exists(outputFolderPath
 outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparatorChar), $"Конвертация {DateTime.Now:ddMMyyyy_HHmmss}");
 Directory.CreateDirectory(outputFolderPath);
 
-foreach (var fileName in historyFiles)
-    try
+// TODO: У людей менялся номер аськи + объединять квип и аську
+foreach (var contact in historyFiles
+             .Select(fileName => QHFReader.GetHeader(fileName))
+             .GroupBy(s => s.Uin))
+{
+    var nick = contact.First().Nick;
+    string allNicks = nick;
+    if (contact.Count() > 1)
     {
-        ConvertFile(fileName, outputFolderPath, userName);
+        allNicks = $"{string.Join(", ", contact.Select(s => s.Nick).Distinct())}";
     }
-    catch (Exception e)
+    
+    Console.WriteLine(allNicks + $": {contact.Count()} файлов");
+    
+    var files = new List<QhfHeader>();
+    var messages = new List<QHFMessage>();
+
+    var counter = 1;
+    foreach (var fileName in contact.Select(s => s.FileName))
     {
-        Console.WriteLine("Ошибка при конвертации файла:");
-        Console.WriteLine(fileName);
+        Console.Write($"\r{counter++}/{contact.Count()}                                                                                                            ");
+        
+        try
+        {
+            GetMessages();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Ошибка при чтении файла:");
+            Console.WriteLine(fileName);
+        }
+
+        void GetMessages()
+        {
+            var file = QHFReader.GetHeader(fileName);
+            if (files.Any(p => p.MsgCount == file.MsgCount && p.Size == file.Size))
+            {
+                return;
+            }
+
+            files.Add(file);
+
+            using var reader = new QHFReader(fileName);
+
+            var msg = new QHFMessage();
+            while (reader.GetNextMessage(msg))
+            {
+                if (!messages.Any(p => p.Same(msg)))
+                {
+                    messages.Add(new QHFMessage(msg));
+                }
+            }
+        }
     }
+
+    Console.WriteLine();
+    
+    var fileNameWithoutExtension = CleanFileName(nick);
+    var outputFileName = Path.Combine(outputFolderPath, $"{fileNameWithoutExtension}.txt");
+    
+    if (File.Exists(outputFileName))
+    {
+        var count = Directory.GetFiles(outputFolderPath, $"{fileNameWithoutExtension}_*.txt").Length;
+        fileNameWithoutExtension = fileNameWithoutExtension + "_" + (count + 1);
+        outputFileName = Path.Combine(outputFolderPath, $"{fileNameWithoutExtension}.txt");
+    }
+    
+    using var fs = new FileStream(outputFileName, FileMode.Create);
+    using var sw = new StreamWriter(fs, Encoding.UTF8);
+
+    //HistoryWriter.WriteHeader(sw.WriteLine, reader);
+
+    foreach (var msg in messages.OrderBy(p => p.Time))
+    {
+        HistoryWriter.WriteBody(sw.WriteLine, msg, userName, nick);
+    }
+    
+    // try
+    // {
+    //     ConvertFile(fileName, outputFolderPath, userName);
+    // }
+    // catch (Exception e)
+    // {
+    //     Console.WriteLine("Ошибка при конвертации файла:");
+    //     Console.WriteLine(fileName);
+    // }
+}
+
+foreach (var info in meta.Where(p => p.MsgCount > 1).OrderBy(p => p.Nick).ThenBy(p => p.FirstMessage))
+{
+    Console.WriteLine($"{info.Nick} - с {info.FirstMessage:dd.MM.yyyy} по {info.LastMessage:dd.MM.yyyy}");
+}
 
 void ConvertFile(string fileName, string outputFolderPath, string userName)
 {
@@ -89,12 +175,25 @@ void ConvertFile(string fileName, string outputFolderPath, string userName)
 
     var msg = new QHFMessage();
 
+    DateTime? firstMessage = null;
+    DateTime? lastMessage = null;
+
     while (reader.GetNextMessage(msg))
     {
+        firstMessage ??= msg.Time;
+        lastMessage = msg.Time;
         HistoryWriter.WriteBody(sw.WriteLine, msg, userName, reader.Nick);
     }
 
-    Console.WriteLine(outputFileName);
+    meta.Add(new QhfInfo()
+    {
+        Nick = reader.Nick,
+        MsgCount = reader.MsgCount,
+        LastMessage = lastMessage.Value,
+        FirstMessage = firstMessage.Value
+    });
+
+    //Console.WriteLine(outputFileName);
 }
 
 string CleanFileName(string readerNick)
@@ -104,4 +203,15 @@ string CleanFileName(string readerNick)
     foreach (var ch in readerNick) sb.Append(Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch);
 
     return sb.ToString();
+}
+
+class QhfInfo
+{
+    public DateTime FirstMessage { get; set; }
+
+    public DateTime LastMessage { get; set; }
+
+    public string Nick { get; set; }
+
+    public int MsgCount { get; set; }
 }
