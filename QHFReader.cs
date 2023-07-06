@@ -95,7 +95,7 @@ public class QHFReader : IDisposable
         br.ReadInt16();
         // Размер самого сообщения
 
-        var msgSize = version == QHFVersion.QipInfiumOrHigher ? br.ReadInt32() : br.ReadInt16();
+        var msgSize = version == QHFVersion.QipInfiumOrHigher ? br.ReadInt32() : br.ReadUInt16();
         var end = fs.Position;
         var text = br.ReadBytes(msgSize);
 
