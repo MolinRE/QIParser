@@ -5,8 +5,8 @@ using System.Text;
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 Console.WriteLine(@"
-QIParser, версия 1.1.0. 
-Автор: Константин Комаров.
+QIParser, версия 1.3.0. 
+Автор: Константин Комаров (https://github.com/MolinRE/QIParser)
 Описание: Конвертер файлов истории QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
 ");
 
@@ -58,15 +58,17 @@ outputFolderPath = Path.Combine(outputFolderPath.TrimEnd(Path.DirectorySeparator
 Directory.CreateDirectory(outputFolderPath);
 
 foreach (var fileName in historyFiles)
+{
     try
     {
         ConvertFile(fileName, outputFolderPath, userName);
     }
-    catch (Exception e)
+    catch (Exception)
     {
         Console.WriteLine("Ошибка при конвертации файла:");
         Console.WriteLine(fileName);
     }
+}
 
 void ConvertFile(string fileName, string outputFolderPath, string userName)
 {
@@ -101,7 +103,10 @@ string CleanFileName(string readerNick)
 {
     var sb = new StringBuilder();
 
-    foreach (var ch in readerNick) sb.Append(Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch);
+    foreach (var ch in readerNick)
+    {
+        sb.Append(Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch);
+    }
 
     return sb.ToString();
 }
