@@ -5,7 +5,7 @@ using System.Text;
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 Console.WriteLine(@"
-QIParser, версия 1.3.0. 
+QIParser, версия 1.4.0.
 Автор: Константин Комаров (https://github.com/MolinRE/QIParser)
 Описание: Конвертер файлов истории QIP и QIP Infium. Преобразует файл с историей в TXT-файл в кодировке UFT-8.
 ");

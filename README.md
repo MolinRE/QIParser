@@ -4,7 +4,7 @@
 
 ## Как запустить
 
-1. Скачать .NET 8: https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime
+1. Скачать .NET 10: https://dotnet.microsoft.com/en-us/download/dotnet/10.0/runtime
 2. Скачать ZIP-архив из последнего релиза (https://github.com/MolinRE/QIParser/releases)
 3. Запустить конвертер:
 ```

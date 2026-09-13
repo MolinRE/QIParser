@@ -3,19 +3,17 @@
 namespace QIParser.Utils;
 
 /// <summary>
-///     Считывает примитивные типы данных как двоичные значения в заданной кодировке.
-///     Численные значения обрабатываются как Big Endian.
+/// Считывает примитивные типы данных как двоичные значения в заданной кодировке.
+/// Численные значения обрабатываются как Big Endian.
 /// </summary>
 public class BinaryReaderBE : BinaryReader
 {
     /// <summary>
-    ///     Инициализирует новый экземпляр класса BinaryReaderBE на основании указанного
-    ///     потока с использованием кодировки UTF-8.
+    /// Инициализирует новый экземпляр класса BinaryReaderBE на основании указанного потока с использованием кодировки UTF-8.
     /// </summary>
     /// <param name="input">Входной поток.</param>
     /// <exception cref="ArgumentException">
-    ///     Поток не поддерживает чтение, имеет значение null или был закрыт до начала
-    ///     операции.
+    /// Поток не поддерживает чтение, имеет значение null или был закрыт до начала операции.
     /// </exception>
     public BinaryReaderBE(Stream input)
         : base(input)
@@ -23,14 +21,12 @@ public class BinaryReaderBE : BinaryReader
     }
 
     /// <summary>
-    ///     Инициализирует новый экземпляр класса BinaryReaderBE на основе указанного
-    ///     потока и кодировки символов.
+    /// Инициализирует новый экземпляр класса BinaryReaderBE на основе указанного потока и кодировки символов.
     /// </summary>
     /// <param name="input">Входной поток.</param>
     /// <param name="encoding">Кодировка символов, которую нужно использовать.</param>
     /// <exception cref="ArgumentException">
-    ///     Поток не поддерживает чтение, имеет значение null или был закрыт до начала
-    ///     операции.
+    /// Поток не поддерживает чтение, имеет значение null или был закрыт до начала операции.
     /// </exception>
     /// <exception cref="ArgumentNullException">Свойство encoding имеет значение null.</exception>
     public BinaryReaderBE(Stream input, Encoding encoding)

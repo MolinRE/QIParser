@@ -51,6 +51,6 @@ public class HistoryWriter
             }
         }
 
-        return string.Format("{0:00.##} {1}", fullSize, bytes);
+        return $"{fullSize:00.##} {bytes}";
     }
 }
